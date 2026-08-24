@@ -1,0 +1,22 @@
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Next.js
+.next/
+node_modules/
+
+# Data
+data/postgres/
+data/backups/
+data/postgres
+
+# Logs
+*.logS
+
+aeris.md
