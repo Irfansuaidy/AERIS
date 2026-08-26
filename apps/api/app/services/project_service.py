@@ -7,8 +7,15 @@ from app.models.project import Project
 from app.schemas.project import ProjectCreate, ProjectUpdate
 
 
-def create_project(db: Session, data: ProjectCreate):
-    project = Project(**data.model_dump())
+def create_project(
+    db: Session,
+    user_id: UUID,
+    data: ProjectCreate,
+):
+    project = Project(
+        user_id=user_id,
+        **data.model_dump(),
+    )
 
     db.add(project)
     db.commit()
@@ -17,15 +24,23 @@ def create_project(db: Session, data: ProjectCreate):
     return project
 
 
-def get_projects(db: Session):
+def get_projects(
+    db: Session,
+    user_id: UUID,
+):
     result = db.execute(
-        select(Project).order_by(Project.created_at.desc())
+        select(Project)
+        .where(Project.user_id == user_id)
+        .order_by(Project.created_at.desc())
     )
 
     return result.scalars().all()
 
 
-def get_project(db: Session, project_id: UUID):
+def get_project(
+    db: Session,
+    project_id: UUID,
+):
     return db.get(Project, project_id)
 
 
@@ -34,7 +49,9 @@ def update_project(
     project: Project,
     data: ProjectUpdate,
 ):
-    for field, value in data.model_dump(exclude_unset=True).items():
+    for field, value in data.model_dump(
+        exclude_unset=True
+    ).items():
         setattr(project, field, value)
 
     db.commit()
@@ -43,6 +60,9 @@ def update_project(
     return project
 
 
-def delete_project(db: Session, project: Project):
+def delete_project(
+    db: Session,
+    project: Project,
+):
     db.delete(project)
     db.commit()

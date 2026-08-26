@@ -2,9 +2,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.services.validation import require_user
 
 from app.core.database import get_db
+from app.core.dependencies import get_current_user
+from app.models.user import User
 from app.schemas.project import (
     ProjectCreate,
     ProjectResponse,
@@ -17,6 +18,7 @@ from app.services.project_service import (
     get_projects,
     update_project,
 )
+from app.services.validation import require_project
 
 
 router = APIRouter(
@@ -33,9 +35,13 @@ router = APIRouter(
 def create(
     data: ProjectCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    require_user(db, data.user_id)
-    return create_project(db, data)
+    return create_project(
+        db,
+        current_user.id,
+        data,
+    )
 
 
 @router.get(
@@ -44,8 +50,12 @@ def create(
 )
 def list_all(
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return get_projects(db)
+    return get_projects(
+        db,
+        current_user.id,
+    )
 
 
 @router.get(
@@ -55,14 +65,13 @@ def list_all(
 def get_one(
     project_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    project = get_project(db, project_id)
-
-    if project is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Project not found",
-        )
+    project = require_project(
+        db,
+        project_id,
+        current_user.id,
+    )
 
     return project
 
@@ -75,16 +84,19 @@ def update(
     project_id: UUID,
     data: ProjectUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    project = get_project(db, project_id)
+    project = require_project(
+        db,
+        project_id,
+        current_user.id,
+    )
 
-    if project is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Project not found",
-        )
-
-    return update_project(db, project, data)
+    return update_project(
+        db,
+        project,
+        data,
+    )
 
 
 @router.delete(
@@ -94,13 +106,15 @@ def update(
 def delete(
     project_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    project = get_project(db, project_id)
+    project = require_project(
+        db,
+        project_id,
+        current_user.id,
+    )
 
-    if project is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Project not found",
-        )
-
-    delete_project(db, project)
+    delete_project(
+        db,
+        project,
+    )

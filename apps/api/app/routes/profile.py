@@ -1,4 +1,3 @@
-from fastapi import APIRouter, Depends, HTTPException
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -48,7 +47,11 @@ def get_my_profile(
     return profile
 
 
-@router.post("/me")
+@router.post(
+    "/me",
+    response_model=ProfileResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 def create_my_profile(
     data: ProfileCreate,
     current_user: User = Depends(get_current_user),

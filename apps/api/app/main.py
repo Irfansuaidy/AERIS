@@ -1,6 +1,7 @@
 from fastapi import Depends, FastAPI
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import get_db
 from app.routes.users import router as users_router
@@ -15,13 +16,21 @@ from app.routes.events import router as events_router
 from app.routes.documents import router as documents_router
 from app.routes.auth import router as auth_router
 
-
 app = FastAPI(
     title="IRIS API",
     version="0.1.0",
     description="Backend API for IRIS Personal Operating System",
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Register routers
 app.include_router(profile_router)

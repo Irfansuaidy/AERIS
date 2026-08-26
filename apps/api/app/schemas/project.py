@@ -5,7 +5,6 @@ from pydantic import BaseModel, ConfigDict
 
 
 class ProjectCreate(BaseModel):
-    user_id: uuid.UUID
     name: str
     description: str | None = None
     status: str = "planned"
