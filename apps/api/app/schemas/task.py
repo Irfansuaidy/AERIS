@@ -5,7 +5,6 @@ from pydantic import BaseModel, ConfigDict
 
 
 class TaskCreate(BaseModel):
-    user_id: uuid.UUID
     project_id: uuid.UUID | None = None
     parent_task_id: uuid.UUID | None = None
 

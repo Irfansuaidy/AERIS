@@ -5,7 +5,6 @@ from pydantic import BaseModel, ConfigDict
 
 
 class NoteCreate(BaseModel):
-    user_id: uuid.UUID
     project_id: uuid.UUID | None = None
 
     title: str

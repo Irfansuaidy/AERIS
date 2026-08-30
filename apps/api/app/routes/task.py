@@ -1,14 +1,14 @@
 from uuid import UUID
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import get_current_user
+from app.models.user import User
 from app.services.task_validation import validate_parent_task
 from app.core.database import get_db
 from app.services.validation import (
     require_project,
     require_task,
-    require_user,
 )
 from app.schemas.task import (
     TaskCreate,
@@ -18,7 +18,6 @@ from app.schemas.task import (
 from app.services.task_service import (
     create_task,
     delete_task,
-    get_task,
     get_tasks,
     update_task,
 )
@@ -38,24 +37,25 @@ router = APIRouter(
 def create(
     data: TaskCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    require_user(db, data.user_id)
-
     if data.project_id is not None:
         require_project(
             db,
             data.project_id,
-            data.user_id,
+            current_user.id,
         )
 
     if data.parent_task_id is not None:
-        parent = require_task(
+        require_task(
             db,
             data.parent_task_id,
-            data.user_id
+            current_user.id
         )
+
     validate_parent_task(db, None, data.parent_task_id)
-    return create_task(db, data)
+
+    return create_task(db, current_user.id, data)
 
 
 @router.get(
@@ -64,8 +64,9 @@ def create(
 )
 def list_all(
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return get_tasks(db)
+    return get_tasks(db, current_user.id)
 
 
 @router.get(
@@ -75,14 +76,13 @@ def list_all(
 def get_one(
     task_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    task = get_task(db, task_id)
-
-    if task is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Task not found",
-        )
+    task = require_task(
+        db,
+        task_id,
+        current_user.id,
+    )
 
     return task
 
@@ -95,18 +95,26 @@ def update(
     task_id: UUID,
     data: TaskUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     task = require_task(
         db,
         task_id,
-        data.user_id,
+        current_user.id,
     )
+
+    if data.project_id is not None:
+        require_project(
+            db,
+            data.project_id,
+            current_user.id,
+        )
 
     if data.parent_task_id is not None:
         require_task(
             db,
             data.parent_task_id,
-            data.user_id,
+            current_user.id,
         )
 
     validate_parent_task(
@@ -125,13 +133,12 @@ def update(
 def delete(
     task_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    task = get_task(db, task_id)
-
-    if task is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Task not found",
-        )
+    task = require_task(
+        db,
+        task_id,
+        current_user.id,
+    )
 
     delete_task(db, task)

@@ -4,10 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.services.validation import (
-    require_project,
-    require_user,
-)
+from app.core.dependencies import get_current_user
+from app.models.user import User
 from app.schemas.note import (
     NoteCreate,
     NoteResponse,
@@ -16,10 +14,10 @@ from app.schemas.note import (
 from app.services.note_service import (
     create_note,
     delete_note,
-    get_note,
     get_notes,
     update_note,
 )
+from app.services.validation import require_note, require_project
 
 
 router = APIRouter(
@@ -36,17 +34,20 @@ router = APIRouter(
 def create(
     data: NoteCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    require_user(db, data.user_id)
-
     if data.project_id is not None:
         require_project(
             db,
             data.project_id,
-            data.user_id,
+            current_user.id,
         )
 
-    return create_note(db, data)
+    return create_note(
+        db,
+        current_user.id,
+        data,
+    )
 
 
 @router.get(
@@ -55,8 +56,12 @@ def create(
 )
 def list_all(
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return get_notes(db)
+    return get_notes(
+        db,
+        current_user.id,
+    )
 
 
 @router.get(
@@ -66,14 +71,9 @@ def list_all(
 def get_one(
     note_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    note = get_note(db, note_id)
-
-    if note is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Note not found",
-        )
+    note = require_note(db, note_id, current_user.id)
 
     return note
 
@@ -86,16 +86,22 @@ def update(
     note_id: UUID,
     data: NoteUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    note = get_note(db, note_id)
+    note = require_note(db, note_id, current_user.id)
 
-    if note is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Note not found",
+    if data.project_id is not None:
+        require_project(
+            db,
+            data.project_id,
+            current_user.id,
         )
 
-    return update_note(db, note, data)
+    return update_note(
+        db,
+        note,
+        data,
+    )
 
 
 @router.delete(
@@ -105,13 +111,8 @@ def update(
 def delete(
     note_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    note = get_note(db, note_id)
-
-    if note is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Note not found",
-        )
+    note = require_note(db, note_id, current_user.id)
 
     delete_note(db, note)

@@ -7,8 +7,8 @@ from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
 
 
-def create_task(db: Session, data: TaskCreate):
-    task = Task(**data.model_dump())
+def create_task(db: Session, user_id: UUID, data: TaskCreate):
+    task = Task(user_id=user_id, **data.model_dump())
 
     db.add(task)
     db.commit()
@@ -17,9 +17,11 @@ def create_task(db: Session, data: TaskCreate):
     return task
 
 
-def get_tasks(db: Session):
+def get_tasks(db: Session, user_id: UUID):
     result = db.execute(
-        select(Task).order_by(Task.created_at.desc())
+        select(Task)
+        .where(Task.user_id == user_id)
+        .order_by(Task.created_at.desc())
     )
 
     return result.scalars().all()
