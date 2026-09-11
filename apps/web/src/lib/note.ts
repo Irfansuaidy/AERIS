@@ -28,11 +28,11 @@ export interface NoteUpdateInput {
 
 function getAccessToken(): string | null {
     return getToken();
-    }
+}
 
 export async function listNotes(): Promise<Note[]> {
-    const token = getAccessToken()
-    return api<Note[]>("/notes", { 
+    const token = getAccessToken();
+    return api<Note[]>("/notes", {
         method: "GET",
         token: token ?? undefined,
     });
@@ -40,7 +40,7 @@ export async function listNotes(): Promise<Note[]> {
 
 export async function getNote(id: string): Promise<Note> {
     const token = getAccessToken();
-    return api<Note>(`/notes/${id}`, { 
+    return api<Note>(`/notes/${id}`, {
         method: "GET",
         token: token ?? undefined,
     });
@@ -58,16 +58,16 @@ export async function createNote(data: NoteCreateInput): Promise<Note> {
 export async function updateNote(id: string, data: NoteUpdateInput): Promise<Note> {
     const token = getAccessToken();
     return api<Note>(`/notes/${id}`, {
-    method: "PATCH",
-    token: token ?? undefined,
-    body: JSON.stringify(data),
+        method: "PATCH",
+        token: token ?? undefined,
+        body: JSON.stringify(data),
     });
 }
 
 export async function deleteNote(id: string): Promise<void> {
     const token = getAccessToken();
-    return api<void>(`/notes/${id}`, { 
-        method: "DELETE", 
+    return api<void>(`/notes/${id}`, {
+        method: "DELETE",
         token: token ?? undefined,
     });
 }

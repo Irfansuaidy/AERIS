@@ -1,3 +1,4 @@
+# Environment
 .env
 .env.*
 !.env.example
@@ -14,10 +15,25 @@ node_modules/
 # Data
 data/postgres/
 data/backups/
-data/postgres
+data/offline_data/
+data/documents/
+
+# Personal / local data
+data/AERIS/
+
+# Documents / media
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.pdf
+
+# AI
+apps/ai/
 
 # Logs
-*.logS
+*.log
 
+# Project private files
+PRD.md
 aeris.md
-.gitignore

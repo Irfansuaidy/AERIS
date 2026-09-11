@@ -3,6 +3,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.routes.users import router as users_router
 from app.routes.profile import router as profile_router
@@ -15,6 +16,7 @@ from app.routes.task_dependencies import router as task_dependencies_router
 from app.routes.events import router as events_router
 from app.routes.documents import router as documents_router
 from app.routes.auth import router as auth_router
+from app.routes.vocabulary import router as vocabulary_router
 
 app = FastAPI(
     title="IRIS API",
@@ -24,9 +26,8 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-    ],
+    allow_origins=[origin.strip()
+                   for origin in settings.cors_origins.split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,6 +45,7 @@ app.include_router(task_dependencies_router)
 app.include_router(events_router)
 app.include_router(documents_router)
 app.include_router(auth_router)
+app.include_router(vocabulary_router)
 
 
 @app.get("/health")

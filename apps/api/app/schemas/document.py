@@ -25,6 +25,10 @@ class DocumentUpdate(BaseModel):
     checksum: str | None = None
 
 
+class DocumentMove(BaseModel):
+    folder: str = ""
+
+
 class DocumentResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

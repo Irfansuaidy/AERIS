@@ -8,6 +8,7 @@ from app.models.task_dependency import TaskDependency
 from app.models.user import User
 from app.models.event import Event
 from app.models.document import Document
+from app.models.vocabulary import VocabularyEntry
 
 __all__ = [
     "User",
@@ -22,4 +23,5 @@ __all__ = [
     "NoteTag",
     "Event",
     "Document",
+    "VocabularyEntry",
 ]

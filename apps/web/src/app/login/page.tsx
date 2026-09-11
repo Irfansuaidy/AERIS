@@ -1,7 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
 
 import { login, setToken } from "@/lib/auth";
 
@@ -104,6 +106,13 @@ export default function LoginPage() {
         >
           {loading ? "Signing in..." : "Sign in"}
         </button>
+        <Link
+          href="/"
+          className="flex w-full items-center justify-center gap-2 rounded border border-gray-300 p-2 text-black transition-colors hover:bg-gray-100 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-800"
+        >
+          <ArrowLeft size={16} />
+          Back to Home
+        </Link>
       </form>
     </main>
   );

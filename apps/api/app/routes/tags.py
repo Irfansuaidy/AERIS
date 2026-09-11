@@ -1,44 +1,31 @@
 from uuid import UUID
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.services.validation import require_user
 from app.core.database import get_db
-from app.schemas.tag import (
-    TagCreate,
-    TagResponse,
-    TagUpdate,
-)
+from app.core.dependencies import get_current_user
+from app.models.user import User
+from app.services.validation import require_tag
+from app.schemas.tag import TagCreate, TagResponse, TagUpdate
 from app.services.tag_service import (
     create_tag,
     delete_tag,
-    get_tag,
     get_tags,
     update_tag,
 )
 
-
-router = APIRouter(
-    prefix="/tags",
-    tags=["Tags"],
-)
+router = APIRouter(prefix="/tags", tags=["Tags"])
 
 
-@router.post(
-    "",
-    response_model=TagResponse,
-    status_code=status.HTTP_201_CREATED,
-)
+@router.post("", response_model=TagResponse, status_code=status.HTTP_201_CREATED)
 def create(
     data: TagCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    require_user(db, data.user_id)
-
     try:
-        return create_tag(db, data)
+        return create_tag(db, current_user.id, data)
     except IntegrityError:
         db.rollback()
         raise HTTPException(
@@ -47,52 +34,31 @@ def create(
         )
 
 
-@router.get(
-    "",
-    response_model=list[TagResponse],
-)
+@router.get("", response_model=list[TagResponse])
 def list_all(
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return get_tags(db)
+    return get_tags(db, current_user.id)
 
 
-@router.get(
-    "/{tag_id}",
-    response_model=TagResponse,
-)
+@router.get("/{tag_id}", response_model=TagResponse)
 def get_one(
     tag_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    tag = get_tag(db, tag_id)
-
-    if tag is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Tag not found",
-        )
-
-    return tag
+    return require_tag(db, tag_id, current_user.id)
 
 
-@router.patch(
-    "/{tag_id}",
-    response_model=TagResponse,
-)
+@router.patch("/{tag_id}", response_model=TagResponse)
 def update(
     tag_id: UUID,
     data: TagUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    tag = get_tag(db, tag_id)
-
-    if tag is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Tag not found",
-        )
-
+    tag = require_tag(db, tag_id, current_user.id)
     try:
         return update_tag(db, tag, data)
     except IntegrityError:
@@ -103,20 +69,11 @@ def update(
         )
 
 
-@router.delete(
-    "/{tag_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
+@router.delete("/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete(
     tag_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    tag = get_tag(db, tag_id)
-
-    if tag is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Tag not found",
-        )
-
+    tag = require_tag(db, tag_id, current_user.id)
     delete_tag(db, tag)

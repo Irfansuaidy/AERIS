@@ -23,11 +23,14 @@ def create_document(
     return document
 
 
-def get_documents(db: Session):
+def get_documents(db: Session, user_id: UUID | None = None):
+    query = select(Document).order_by(
+        Document.created_at.desc()
+    )
+    if user_id is not None:
+        query = query.where(Document.user_id == user_id)
     result = db.execute(
-        select(Document).order_by(
-            Document.created_at.desc()
-        )
+        query
     )
 
     return result.scalars().all()
