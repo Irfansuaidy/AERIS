@@ -10,6 +10,8 @@ Repository ini masih dalam pengembangan. Backend dan frontend sudah dapat
 dijalankan sebagai vertical slice, sedangkan pipeline AI handwriting OCR
 disediakan sebagai komponen terpisah dan opsional.
 
+### Untuk AI masih sedang di develop per 11 September ini
+
 ## Fitur Saat Ini
 
 - Register, login, JWT authentication, dan profile pengguna.
@@ -37,7 +39,7 @@ infrastructure/docker/  PostgreSQL dan Adminer
 packages/shared/        Paket bersama untuk kebutuhan lintas aplikasi
 ```
 
-## Prasyarat
+## Tools Requirement
 
 - Git
 - Python 3.13 atau versi yang kompatibel dengan dependency proyek
@@ -48,7 +50,7 @@ packages/shared/        Paket bersama untuk kebutuhan lintas aplikasi
 ## Clone dan Database
 
 ```bash
-git clone <URL-REPOSITORY>
+git clone https://github.com/Irfansuaidy/AERIS.git
 cd AERIS
 
 docker compose -f infrastructure/docker/compose.yaml up -d
@@ -58,9 +60,9 @@ docker compose -f infrastructure/docker/compose.yaml ps
 PostgreSQL tersedia di `localhost:5432` dengan nilai development berikut:
 
 ```text
-database: iris
-user: iris
-password: iris_dev_password
+database: sesuain env
+user: sesuain env
+password: sesuain env
 ```
 
 Adminer tersedia di <http://localhost:8080>. Gunakan `postgres` sebagai server
@@ -130,7 +132,6 @@ Buka <http://localhost:3000>. Perintah lain:
 ```bash
 npm run lint
 npm run build
-npm run start
 ```
 
 Frontend meneruskan request `/api/*` ke API melalui `API_SERVER_URL`.
