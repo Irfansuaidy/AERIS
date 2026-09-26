@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from app.models.vocabulary import VocabularyEntry
 from app.schemas.vocabulary import VocabularyCreate, VocabularyUpdate
-from app.services.activity_service import log_activity
 
 
 def create_vocabulary(db: Session, user_id: UUID, data: VocabularyCreate):
@@ -13,10 +12,6 @@ def create_vocabulary(db: Session, user_id: UUID, data: VocabularyCreate):
     db.add(entry)
     db.commit()
     db.refresh(entry)
-    try:
-        log_activity(db, user_id, "vocabulary.created", "vocabulary", entry.id, {"word": entry.word})
-    except Exception:
-        pass
     return entry
 
 

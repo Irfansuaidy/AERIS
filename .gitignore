@@ -15,20 +15,14 @@ node_modules/
 # Data
 data/
 
-# Vocabulary
-vocabulary/
-**/vocabulary/
-**/routes/vocabulary*
-**/models/vocabulary*
-**/services/vocabulary*
-**/schemas/vocabulary*
-
-# SAT-Prep
-sat-prep/
-**/sat-prep/
-
 # AI
 apps/ai-training/
+
+# Vocabulary & SAT-Prep
+vocabulary/
+sat-prep/
+**/vocabulary/
+**/sat-prep/
 
 # Documents / media
 *.mp4
