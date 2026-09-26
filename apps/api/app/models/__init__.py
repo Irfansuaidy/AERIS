@@ -9,6 +9,7 @@ from app.models.user import User
 from app.models.event import Event
 from app.models.document import Document
 from app.models.vocabulary import VocabularyEntry
+from app.models.activity_log import ActivityLog
 
 __all__ = [
     "User",
@@ -24,4 +25,5 @@ __all__ = [
     "Event",
     "Document",
     "VocabularyEntry",
+    "ActivityLog",
 ]

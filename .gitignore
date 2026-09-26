@@ -13,13 +13,22 @@ __pycache__/
 node_modules/
 
 # Data
-data/postgres/
-data/backups/
-data/offline_data/
-data/documents/
+data/
 
-# Personal / local data
-data/AERIS/
+# Vocabulary
+vocabulary/
+**/vocabulary/
+**/routes/vocabulary*
+**/models/vocabulary*
+**/services/vocabulary*
+**/schemas/vocabulary*
+
+# SAT-Prep
+sat-prep/
+**/sat-prep/
+
+# AI
+apps/ai-training/
 
 # Documents / media
 *.mp4
@@ -27,9 +36,6 @@ data/AERIS/
 *.avi
 *.mov
 *.pdf
-
-# AI
-apps/ai/
 
 # Logs
 *.log

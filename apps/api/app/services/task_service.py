@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
+from app.services.activity_service import log_activity
 
 
 def create_task(db: Session, user_id: UUID, data: TaskCreate):
@@ -13,7 +14,10 @@ def create_task(db: Session, user_id: UUID, data: TaskCreate):
     db.add(task)
     db.commit()
     db.refresh(task)
-
+    try:
+        log_activity(db, user_id, "task.created", "task", task.id, {"title": task.title})
+    except Exception:
+        pass
     return task
 
 

@@ -3,6 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from app.models.tag import Tag
 from app.schemas.tag import TagCreate, TagUpdate
+from app.services.activity_service import log_activity
 
 
 def create_tag(db: Session, user_id: UUID, data: TagCreate):
@@ -10,6 +11,10 @@ def create_tag(db: Session, user_id: UUID, data: TagCreate):
     db.add(tag)
     db.commit()
     db.refresh(tag)
+    try:
+        log_activity(db, user_id, "tag.created", "tag", tag.id, {"name": tag.name})
+    except Exception:
+        pass
     return tag
 
 

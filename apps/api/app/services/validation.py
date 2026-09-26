@@ -3,7 +3,10 @@ from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from app.models.document import Document
+from app.models.event import Event
 from app.models.note import Note
+from app.models.profile import Profile
 from app.models.project import Project
 from app.models.tag import Tag
 from app.models.task import Task
@@ -39,6 +42,7 @@ def require_project(
         )
 
     if project.user_id != user_id:
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
         raise HTTPException(
             status_code=403,
             detail="Project does not belong to this user",
@@ -61,6 +65,7 @@ def require_task(
         )
 
     if task.user_id != user_id:
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
         raise HTTPException(
             status_code=403,
             detail="Task does not belong to this user",
@@ -83,6 +88,7 @@ def require_note(
         )
 
     if note.user_id != user_id:
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
         raise HTTPException(
             status_code=403,
             detail="Note does not belong to this user",
@@ -105,9 +111,79 @@ def require_tag(
         )
 
     if tag.user_id != user_id:
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
         raise HTTPException(
             status_code=403,
             detail="Tag does not belong to this user",
         )
 
     return tag
+
+
+def require_event(
+    db: Session,
+    event_id: UUID,
+    user_id: UUID,
+):
+    event = db.get(Event, event_id)
+
+    if event is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Event not found",
+        )
+
+    if event.user_id != user_id:
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
+        raise HTTPException(
+            status_code=403,
+            detail="Event does not belong to this user",
+        )
+
+    return event
+
+
+def require_document(
+    db: Session,
+    document_id: UUID,
+    user_id: UUID,
+):
+    document = db.get(Document, document_id)
+
+    if document is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Document not found",
+        )
+
+    if document.user_id != user_id:
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
+        raise HTTPException(
+            status_code=403,
+            detail="Document does not belong to this user",
+        )
+
+    return document
+
+
+def require_profile(
+    db: Session,
+    profile_id: UUID,
+    user_id: UUID,
+):
+    profile = db.get(Profile, profile_id)
+
+    if profile is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Profile not found",
+        )
+
+    if profile.user_id != user_id:
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
+        raise HTTPException(
+            status_code=403,
+            detail="Profile does not belong to this user",
+        )
+
+    return profile

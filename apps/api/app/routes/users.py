@@ -47,8 +47,13 @@ def get_me(
 def create(
     data: UserCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return create_user(db, data)
+    # Only allow registration via auth/register or admin
+    raise HTTPException(
+        status_code=403,
+        detail="Use /auth/register to create new users",
+    )
 
 
 @router.get(
@@ -57,8 +62,10 @@ def create(
 )
 def list_all(
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return get_users(db)
+    # Filter to only return current user
+    return [current_user]
 
 
 @router.get(
@@ -68,16 +75,16 @@ def list_all(
 def get_one(
     user_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    user = get_user(db, user_id)
-
-    if user is None:
+    if user_id != current_user.id:
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
         raise HTTPException(
-            status_code=404,
-            detail="User not found",
+            status_code=403,
+            detail="Cannot access other users' data",
         )
 
-    return user
+    return current_user
 
 
 @router.patch(
@@ -88,16 +95,15 @@ def update(
     user_id: UUID,
     data: UserUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    user = get_user(db, user_id)
-
-    if user is None:
+    if user_id != current_user.id:
         raise HTTPException(
-            status_code=404,
-            detail="User not found",
+            status_code=403,
+            detail="Cannot update other users",
         )
 
-    return update_user(db, user, data)
+    return update_user(db, current_user, data)
 
 
 @router.delete(
@@ -107,13 +113,12 @@ def update(
 def delete(
     user_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    user = get_user(db, user_id)
-
-    if user is None:
+    if user_id != current_user.id:
         raise HTTPException(
-            status_code=404,
-            detail="User not found",
+            status_code=403,
+            detail="Cannot delete other users",
         )
 
-    delete_user(db, user)
+    delete_user(db, current_user)

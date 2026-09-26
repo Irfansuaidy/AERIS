@@ -253,12 +253,18 @@ export default function TasksPage() {
 
                         <label className="block text-sm font-medium">
                             Status
-                            <input
+                            <select
                                 value={form.status}
                                 onChange={event => updateField("status", event.target.value)}
                                 className="mt-1 w-full rounded border p-2"
                                 required
-                            />
+                            >
+                                <option value="todo">Todo</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="done">Done</option>
+                                <option value="blocked">Blocked</option>
+                                <option value="archived">Archived</option>
+                            </select>
                         </label>
 
                         <label className="block text-sm font-medium sm:col-span-2">
@@ -272,15 +278,18 @@ export default function TasksPage() {
 
                         <label className="block text-sm font-medium">
                             Priority
-                            <input
-                                type="number"
-                                min="1"
-                                max="5"
+                            <select
                                 value={form.priority}
                                 onChange={event => updateField("priority", event.target.value)}
                                 className="mt-1 w-full rounded border p-2"
                                 required
-                            />
+                            >
+                                <option value="1">1 — Critical</option>
+                                <option value="2">2 — High</option>
+                                <option value="3">3 — Medium</option>
+                                <option value="4">4 — Low</option>
+                                <option value="5">5 — Minimal</option>
+                            </select>
                         </label>
 
                         <label className="block text-sm font-medium">

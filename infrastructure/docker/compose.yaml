@@ -18,9 +18,48 @@ services:
             timeout: 5s
             retries: 5
 
+    redis:
+        image: redis:7-alpine
+        container_name: iris-redis
+        restart: unless-stopped
+        ports:
+            - "6379:6379"
+        volumes:
+            - ../../data/redis:/data
+
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
     adminer:
         image: adminer:latest
         container_name: iris-adminer
         restart: unless-stopped
         ports:
             - "8080:8080"
+
+    ocr:
+        build:
+            context: ../../apps/ocr
+            dockerfile: Dockerfile
+        container_name: iris-ocr
+        restart: unless-stopped
+        ports:
+            - "8001:8001"
+        environment:
+            - OCR_SERVICE_HOST=0.0.0.0
+            - OCR_SERVICE_PORT=8001
+            - REDIS_URL=redis://redis:6379/0
+            - IRIS_API_BASE_URL=http://api:8000
+            - IRIS_API_KEY=${OCR_SERVICE_API_KEY:-ocr-secret-key}
+            - MODEL_NAME=/app/artifacts/trocr-iam
+            - DEVICE=cpu
+        depends_on:
+            redis:
+                condition: service_healthy
+        volumes:
+            - ../../apps/ocr/models:/app/models
+            - ../../apps/ocr/checkpoints:/app/checkpoints
+            - ../../apps/ai-training/artifacts:/app/artifacts:ro

@@ -111,14 +111,19 @@ export default function DashboardPage() {
     );
 
     const pendingTasks = useMemo(
-        () =>
-            tasks
+        () => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            return tasks
                 .filter(task => task.status !== "done")
-                .sort(
-                    (first, second) =>
-                        Number(new Date(first.due_at ?? "9999")) - Number(new Date(second.due_at ?? "9999")),
-                )
-                .slice(0, 5),
+                .sort((first, second) => {
+                    const firstDue = first.due_at ? new Date(first.due_at).getTime() : Number.MAX_SAFE_INTEGER;
+                    const secondDue = second.due_at ? new Date(second.due_at).getTime() : Number.MAX_SAFE_INTEGER;
+                    return firstDue - secondDue;
+                })
+                .slice(0, 5);
+        },
         [tasks],
     );
 
@@ -179,7 +184,7 @@ export default function DashboardPage() {
                     {errors.tasks ? (
                         <ErrorState onRetry={loadData} label="Unable to load tasks." />
                     ) : (
-                        <TaskList tasks={pendingTasks} onToggle={toggleTask} />
+                        <TaskList tasks={pendingTasks} onToggle={toggleTask} projects={projects} />
                     )}
                 </DashboardPanel>
                 <DashboardPanel>

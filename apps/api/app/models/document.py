@@ -1,11 +1,18 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, String, func
+from sqlalchemy import BigInteger, DateTime, ForeignKey, String, func, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
+
+
+class OCRStatus(str):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 
 class Document(Base):
@@ -51,6 +58,22 @@ class Document(Base):
 
     checksum: Mapped[str | None] = mapped_column(
         String(128),
+        nullable=True,
+    )
+
+    ocr_status: Mapped[str | None] = mapped_column(
+        String(50),
+        default=None,
+        nullable=True,
+    )
+
+    ocr_task_id: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
+    ocr_result: Mapped[str | None] = mapped_column(
+        String(65535),
         nullable=True,
     )
 

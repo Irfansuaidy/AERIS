@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class EventCreate(BaseModel):
-    user_id: uuid.UUID
+    user_id: uuid.UUID | None = None
     project_id: uuid.UUID | None = None
 
     title: str

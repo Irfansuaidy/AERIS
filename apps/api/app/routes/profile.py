@@ -93,7 +93,20 @@ def create_my_profile(
 def create(
     data: ProfileCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    # Override user_id from token
+    data.user_id = current_user.id
+    
+    # Check if profile already exists
+    existing = (
+        db.query(Profile)
+        .filter(Profile.user_id == current_user.id)
+        .first()
+    )
+    if existing:
+        raise HTTPException(status_code=409, detail="Profile already exists")
+        
     return create_profile(db, data)
 
 
@@ -103,8 +116,14 @@ def create(
 )
 def list_all(
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return get_profiles(db)
+    profile = (
+        db.query(Profile)
+        .filter(Profile.user_id == current_user.id)
+        .first()
+    )
+    return [profile] if profile else []
 
 
 @router.get(
@@ -114,15 +133,10 @@ def list_all(
 def get_one(
     profile_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    profile = get_profile(db, profile_id)
-
-    if profile is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Profile not found",
-        )
-
+    from app.services.validation import require_profile
+    profile = require_profile(db, profile_id, current_user.id)
     return profile
 
 
@@ -134,15 +148,10 @@ def update(
     profile_id: UUID,
     data: ProfileUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    profile = get_profile(db, profile_id)
-
-    if profile is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Profile not found",
-        )
-
+    from app.services.validation import require_profile
+    profile = require_profile(db, profile_id, current_user.id)
     return update_profile(db, profile, data)
 
 
@@ -153,13 +162,8 @@ def update(
 def delete(
     profile_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    profile = get_profile(db, profile_id)
-
-    if profile is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Profile not found",
-        )
-
+    from app.services.validation import require_profile
+    profile = require_profile(db, profile_id, current_user.id)
     delete_profile(db, profile)

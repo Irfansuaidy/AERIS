@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.project import Project
 from app.schemas.project import ProjectCreate, ProjectUpdate
+from app.services.activity_service import log_activity
 
 
 def create_project(
@@ -20,7 +21,10 @@ def create_project(
     db.add(project)
     db.commit()
     db.refresh(project)
-
+    try:
+        log_activity(db, user_id, "project.created", "project", project.id, {"name": project.name})
+    except Exception:
+        pass
     return project
 
 

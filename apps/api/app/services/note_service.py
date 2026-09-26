@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.note import Note
 from app.schemas.note import NoteCreate, NoteUpdate
+from app.services.activity_service import log_activity
 
 
 def create_note(
@@ -20,7 +21,10 @@ def create_note(
     db.add(note)
     db.commit()
     db.refresh(note)
-
+    try:
+        log_activity(db, user_id, "note.created", "note", note.id, {"title": note.title})
+    except Exception:
+        pass
     return note
 
 

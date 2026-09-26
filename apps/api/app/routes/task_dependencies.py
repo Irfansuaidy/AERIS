@@ -20,6 +20,10 @@ from app.services.task_dependency_service import (
 )
 
 
+from app.core.dependencies import get_current_user
+from app.models.user import User
+from app.services.validation import require_task
+
 router = APIRouter(
     prefix="/tasks",
     tags=["Task Dependencies"],
@@ -35,7 +39,12 @@ def create_dependency(
     task_id: UUID,
     data: TaskDependencyCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    # Ensure both tasks belong to the user
+    task = require_task(db, task_id, current_user.id)
+    dependency_task = require_task(db, data.depends_on_task_id, current_user.id)
+
     if task_id == data.depends_on_task_id:
         raise HTTPException(
             status_code=400,
@@ -43,25 +52,6 @@ def create_dependency(
         )
 
     validate_task_dependency(db, task_id, data.depends_on_task_id)
-
-    task = db.get(Task, task_id)
-
-    if task is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Task not found",
-        )
-
-    dependency_task = db.get(
-        Task,
-        data.depends_on_task_id,
-    )
-
-    if dependency_task is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Dependency task not found",
-        )
 
     try:
         return add_dependency(
@@ -86,15 +76,9 @@ def create_dependency(
 def list_dependencies(
     task_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    task = db.get(Task, task_id)
-
-    if task is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Task not found",
-        )
-
+    require_task(db, task_id, current_user.id)
     return get_dependencies(db, task_id)
 
 
@@ -106,25 +90,11 @@ def delete_dependency(
     task_id: UUID,
     depends_on_task_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    task = db.get(Task, task_id)
-
-    if task is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Task not found",
-        )
-
-    dependency_task = db.get(
-        Task,
-        depends_on_task_id,
-    )
-
-    if dependency_task is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Dependency task not found",
-        )
+    require_task(db, task_id, current_user.id)
+    # Check dependency task exists and belongs to user too
+    require_task(db, depends_on_task_id, current_user.id)
 
     remove_dependency(
         db,

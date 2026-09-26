@@ -9,6 +9,7 @@ import {
     ChevronRight,
     FileText,
     FolderKanban,
+    GraduationCap,
     LogOut,
     Menu,
     Search,
@@ -82,6 +83,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const navItems = [
         { name: "Projects", href: "/projects", icon: FolderKanban },
         { name: "Notes", href: "/note", icon: FileText },
+        { name: "SAT Prep", href: "/sat-prep", icon: GraduationCap },
         { name: "IELTS Vocabulary", href: "/vocabulary", icon: BookOpen },
         { name: "Events", href: "/calendar", icon: CalendarDays },
         { name: "Documents", href: "/documents", icon: FileText },

@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     jwt_access_token_expire_minutes: int = 60
     documents_root: str = str(REPOSITORY_ROOT / "data" / "documents")
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+    
+    ocr_service_url: str = "http://localhost:8001"
+    iris_api_base_url: str = "http://localhost:8000"
+    ocr_service_api_key: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",

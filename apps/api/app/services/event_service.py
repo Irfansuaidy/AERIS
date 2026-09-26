@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.event import Event
 from app.schemas.event import EventCreate, EventUpdate
+from app.services.activity_service import log_activity
 
 
 def create_event(db: Session, data: EventCreate):
@@ -13,7 +14,10 @@ def create_event(db: Session, data: EventCreate):
     db.add(event)
     db.commit()
     db.refresh(event)
-
+    try:
+        log_activity(db, event.user_id, "event.created", "event", event.id, {"title": event.title})
+    except Exception:
+        pass
     return event
 
 

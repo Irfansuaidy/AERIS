@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -11,6 +11,7 @@ from app.schemas.document import (
     DocumentMove,
     DocumentResponse,
     DocumentUpdate,
+    DocumentTriggerOCR,
 )
 from app.services.document_service import (
     create_document,
@@ -18,6 +19,8 @@ from app.services.document_service import (
     get_document,
     get_documents,
     update_document,
+    trigger_ocr,
+    update_ocr_result,
 )
 from app.core.config import settings
 from app.core.dependencies import get_current_user
@@ -92,9 +95,10 @@ def get_one(
     document = get_document(db, document_id)
 
     if document is None or document.user_id != current_user.id:
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
         raise HTTPException(
-            status_code=404,
-            detail="Document not found",
+            status_code=403,
+            detail="Document not found or not owned",
         )
 
     return document
@@ -113,9 +117,10 @@ def update(
     document = get_document(db, document_id)
 
     if document is None or document.user_id != current_user.id:
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
         raise HTTPException(
-            status_code=404,
-            detail="Document not found",
+            status_code=403,
+            detail="Document not found or not owned",
         )
 
     return update_document(db, document, data)
@@ -133,9 +138,10 @@ def delete(
     document = get_document(db, document_id)
 
     if document is None or document.user_id != current_user.id:
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
         raise HTTPException(
-            status_code=404,
-            detail="Document not found",
+            status_code=403,
+            detail="Document not found or not owned",
         )
 
     delete_document(db, document)
@@ -150,7 +156,8 @@ def move(
 ):
     document = get_document(db, document_id)
     if document is None or document.user_id != current_user.id:
-        raise HTTPException(status_code=404, detail="Document not found")
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
+        raise HTTPException(status_code=403, detail="Document not found or not owned")
 
     root = Path(settings.documents_root).resolve()
     source = Path(document.file_path).resolve()
@@ -177,3 +184,45 @@ def move(
     db.commit()
     db.refresh(document)
     return document
+
+
+@router.post("/{document_id}/ocr", response_model=DocumentResponse)
+def trigger_document_ocr(
+    document_id: UUID,
+    data: DocumentTriggerOCR,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    document = get_document(db, document_id)
+    
+    if document is None or document.user_id != current_user.id:
+        # TODO(PRE-DEPLOY): switch 403 to 404 to hide existence
+        raise HTTPException(status_code=403, detail="Document not found or not owned")
+    
+    try:
+        return trigger_ocr(db, document, data.file_url)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{document_id}/ocr-callback")
+def ocr_callback(
+    document_id: UUID,
+    payload: dict,
+    db: Session = Depends(get_db),
+    x_api_key: str = Header(None),
+):
+    if x_api_key != settings.ocr_service_api_key:
+        raise HTTPException(status_code=403, detail="Invalid API key")
+    
+    document = get_document(db, document_id)
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    status_value = payload.get("status")
+    result = payload.get("result")
+    error = payload.get("error")
+    
+    update_ocr_result(db, document, status_value, result, error)
+    
+    return {"status": "ok"}

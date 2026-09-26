@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class ProfileCreate(BaseModel):
-    user_id: uuid.UUID
+    user_id: uuid.UUID | None = None
     full_name: str | None = None
     display_name: str | None = None
     bio: str | None = None
