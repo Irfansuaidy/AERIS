@@ -11,7 +11,7 @@ dijalankan sebagai vertical slice, sedangkan pipeline AI handwriting OCR
 disediakan sebagai komponen terpisah dan opsional.
 
 ### Untuk AI masih sedang di develop per 26 September ini
-# fitur ai yang sudah selesai di develop adalah OCR
+#### fitur ai yang sudah selesai di develop adalah OCR
 
 ## Fitur Saat Ini
 
