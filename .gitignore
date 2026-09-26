@@ -18,11 +18,25 @@ data/
 # AI
 apps/ai-training/
 
-# Vocabulary & SAT-Prep
+# Vocabulary & SAT-Prep (personal, not core)
 vocabulary/
 sat-prep/
 **/vocabulary/
 **/sat-prep/
+**/vocabulary*
+**/sat-prep*
+**/*vocabulary*
+**/*sat-prep*
+**/*sat_seed*
+**/*sat_seeder*
+**/*seed_sat*
+**/*ieltsVocabulary*
+apps/api/alembic/versions/*vocabulary*
+apps/web/src/app/**/vocabulary/**
+apps/web/src/app/**/sat-prep/**
+apps/web/src/components/sat-prep/**
+apps/web/src/lib/sat-prep*
+apps/web/src/lib/ieltsVocabulary*
 
 # Documents / media
 *.mp4

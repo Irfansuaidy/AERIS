@@ -8,7 +8,10 @@ from app.models.task_dependency import TaskDependency
 from app.models.user import User
 from app.models.event import Event
 from app.models.document import Document
-from app.models.vocabulary import VocabularyEntry
+try:
+    from app.models.vocabulary import VocabularyEntry
+except ImportError:
+    VocabularyEntry = None  # type: ignore
 from app.models.activity_log import ActivityLog
 
 __all__ = [
